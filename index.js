@@ -32,66 +32,68 @@ document.addEventListener('DOMContentLoaded', () => {
 //buildWord is used to display the data retrieved about the word
 //words are displayed by name, pronunciation, definition/s by default
 function buildWord(wordData) {
-        const wordContainer = document.getElementById('word-container');
-        let newWord = document.createElement('h4');
-        newWord.className = `${wordData.word}`;
-        newWord.textContent = `${wordData.word}`;
-        wordContainer.appendChild(newWord);
-    
-        for (let index in Object.keys(wordData)) {
-            let pos = Object.keys(wordData)[index];
-            if (pos != 'word') {
-                createCollapsible(wordContainer, wordData, pos);
-                //STRUGGLE
-                let buttons = document.getElementsByClassName("button")
-                for (let e in buttons) {
-                    console.log(buttons[e]);
-                    buttons[e].style = "show";
-                    //buttons[e].addEventListener("click", (event) => {
-                    //    console.log(event.target);
-                    //})
+    const wordContainer = document.getElementById('word-container');
+    let newWord = document.createElement('h3');
+    newWord.className = `${wordData.word}`;
+    newWord.textContent = `${wordData.word}`;
+    wordContainer.appendChild(newWord);
+
+    for (let index in Object.keys(wordData)) {
+        let pos = Object.keys(wordData)[index];
+        if (pos != 'word') { createCollapsible(wordContainer, wordData, pos)
+            let currentDiv = document.getElementById(`${wordData.word}-card-${pos}`);
+            let currentUl = document.getElementById(`${wordData.word}-list-${pos}`);
+            for (let entry in wordData[pos]) {
+                let definition = wordData[pos][entry].definition;
+                let li = document.createElement('li');
+                li.textContent = definition;
+                currentUl.appendChild(li);
+            };
+            currentDiv.addEventListener('click', (event) => {
+                event.preventDefault();
+                if (event.target.className === 'button') {
+                    console.log("test")
+                    if (event.target.style.display === 'show') {
+                        event.target.style.display = 'hide'
+                    } else { event.target.style.display = 'show' };
                 };
-                for (let entry in wordData[pos]) {
-                    let definition = wordData[pos][entry].definition;
-                    let li = document.createElement('li');
-                    li.className = wordData.word;
-                    li.textContent = definition;
-//appends definition li's to the approprpiately named ul 
-                    document.getElementById(`${wordData.word}-def-${pos}`).appendChild(li);
-                }
-            }
-        }
-    }
+            });
+        };
+    };
+};
     
 //creates the button for showing and hiding the definitions by POS
-    function createCollapsible (location, wordData, pos) {
-        let div = document.createElement('div');
-        div.id = `${pos}`;
-        let button = document.createElement('button')
-        button.className = 'button';
-        button.textContent = pos;
-        let ul = document.createElement('ul')
-        ul.id = `${wordData.word}-def-${pos}`;
-        ul.className = 'collapsible'
+function createCollapsible (location, wordData, pos) {
+    let div = document.createElement('div');
+    div.id = `${wordData.word}-card-${pos}`;
     
-        div.appendChild(button);
-        div.appendChild(ul);
-        location.appendChild(div);
-    }
+    let button = document.createElement('button')
+    button.className = 'button';
+    button.id = `${wordData.word}-btn-${pos}`;
+    button.textContent = pos;
+
+    let ul = document.createElement('ul')
+    ul.id = `${wordData.word}-list-${pos}`;
+    ul.style.display = 'show'
+
+    div.appendChild(button);
+    div.appendChild(ul);
+    location.appendChild(div);
+}
     
 //function used for gathering all definitions by part of speech and returning an object with keys cooresponding to POS
-    function reduceDefinitions (data) {
-        let reducedDefinitions = {};
-        for(let fullGroup in data) {
-            for(let meanings in data[fullGroup].meanings) {
-            let outputGroups = data[fullGroup].meanings[meanings];
-                for (let definitionObjects in outputGroups.definitions){
-                    if (!Object.keys(reducedDefinitions).includes(outputGroups.partOfSpeech)) {
-                        reducedDefinitions[outputGroups.partOfSpeech] = [];
-                    }
-                    reducedDefinitions[outputGroups.partOfSpeech].push(outputGroups.definitions[definitionObjects])
-                }   
-            }
+function reduceDefinitions (data) {
+    let reducedDefinitions = {};
+    for(let fullGroup in data) {
+        for(let meanings in data[fullGroup].meanings) {
+        let outputGroups = data[fullGroup].meanings[meanings];
+            for (let definitionObjects in outputGroups.definitions){
+                if (!Object.keys(reducedDefinitions).includes(outputGroups.partOfSpeech)) {
+                    reducedDefinitions[outputGroups.partOfSpeech] = [];
+                }
+                reducedDefinitions[outputGroups.partOfSpeech].push(outputGroups.definitions[definitionObjects])
+            }   
         }
-        return reducedDefinitions;
     }
+    return reducedDefinitions;
+}

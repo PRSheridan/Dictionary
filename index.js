@@ -7,10 +7,9 @@ const GETconfig = {
     }
 };
 
-//when clicking search the api returns the words json information (currently the
-//getWordUrl is displayed in the console for reference). buildWord is then called 
-//on the data retrieved.^^^
-//also DOMContentLoaded
+//DOMContentLoaded
+//when clicking search the api returns the words json information
+//buildWord is then called on the data retrieved.^^^
 document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('submit', (event)=> {
         event.preventDefault(); 
@@ -25,27 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(function(data) {
             let reducedDefinitions = reduceDefinitions(data);
             reducedDefinitions['word'] = wordChoice;
-//buildWord call
             buildWord(reducedDefinitions)
         });
     });
-
-    const coll = document.getElementsByClassName("collapsible");
-    console.log(coll)
-    for (let i = 0; i < coll.length; i++) {
-        coll[i].style.display = "none"
-        coll[i].addEventListener("click", (event) => {
-            if (event.target.style.display === 'show') {event.target.style.display = 'none'}
-            else {event.target.style.display = 'show'};
-        })
-    }
 });
 
 //buildWord is used to display the data retrieved about the word
 //words are displayed by name, pronunciation, definition/s by default
-
 function buildWord(wordData) {
-//create word card title
         const wordContainer = document.getElementById('word-container');
         let newWord = document.createElement('h4');
         newWord.className = `${wordData.word}`;
@@ -55,15 +41,22 @@ function buildWord(wordData) {
         for (let index in Object.keys(wordData)) {
             let pos = Object.keys(wordData)[index];
             if (pos != 'word') {
-//create the collapsible for the word
                 createCollapsible(wordContainer, wordData, pos);
-//populate the collapsible with definitions
+                //STRUGGLE
+                let buttons = document.getElementsByClassName("button")
+                for (let e in buttons) {
+                    console.log(buttons[e]);
+                    buttons[e].style = "show";
+                    //buttons[e].addEventListener("click", (event) => {
+                    //    console.log(event.target);
+                    //})
+                };
                 for (let entry in wordData[pos]) {
                     let definition = wordData[pos][entry].definition;
                     let li = document.createElement('li');
                     li.className = wordData.word;
                     li.textContent = definition;
-//creates then appends definition li's to the approprpiately named ul 
+//appends definition li's to the approprpiately named ul 
                     document.getElementById(`${wordData.word}-def-${pos}`).appendChild(li);
                 }
             }
@@ -75,10 +68,11 @@ function buildWord(wordData) {
         let div = document.createElement('div');
         div.id = `${pos}`;
         let button = document.createElement('button')
-        button.className = 'collapsible';
+        button.className = 'button';
         button.textContent = pos;
         let ul = document.createElement('ul')
         ul.id = `${wordData.word}-def-${pos}`;
+        ul.className = 'collapsible'
     
         div.appendChild(button);
         div.appendChild(ul);

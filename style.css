@@ -1,0 +1,8 @@
+.hidden {
+    visibility: hidden;
+    font-size: 0px;
+  }
+
+.button {
+cursor: pointer;
+}

@@ -1,10 +1,12 @@
 //initialize critical variables
 let wordChoice = "default";
+const favUrl = `http://localhost:3000/favorites`;
 const GETconfig = {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-    }
+      "Accept": "application/json",
+    },
 };
 
 //DOMContentLoaded
@@ -30,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 //functionality. 
             let reducedDefinitions = reduceDefinitions(data);
             reducedDefinitions['word'] = wordChoice;
+            console.log(reducedDefinitions)
             buildWord(data, reducedDefinitions)
         });
     });

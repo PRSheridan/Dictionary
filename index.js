@@ -13,7 +13,7 @@ const GETconfig = {
 //when clicking search the api returns the words json information
 //remove previous children and call buildWord on reducedDefinitions
 document.addEventListener('DOMContentLoaded', () => {
-    document.addEventListener('submit', (event)=> {
+    document.addEventListener('submit', (event) => {
         event.preventDefault(); 
         tempCont = document.getElementById('word-container');
         while (tempCont.firstChild) {
@@ -28,12 +28,43 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(function(data) {
-//currently reducedDefinitions is the only data passed to buildWord, this will change with added
-//functionality. 
             let reducedDefinitions = reduceDefinitions(data);
             reducedDefinitions['word'] = wordChoice;
             console.log(reducedDefinitions)
             buildWord(data, reducedDefinitions)
+
+//really broken version of updating favorites list- working on fixing might need to refresh on 
+//how to run the local server && how to input my words data (currently not sure if my POSTconfig is good)
+
+            let tempFav = document.getElementById('fav-button')
+            let favList = document.getElementById('fav-container')
+            tempFav.addEventListener('click', () => {
+                event.preventDefault();
+                const POSTconfig = {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      "Accept": "application/json",
+                    },
+                    body: JSON.stringify({
+                      "name": document.getElementById('current-word').textContent,
+                      "values": {
+                        "pronunciation": document.getElementById('current-phonetics'),
+                        "definitions": reducedDefinitions,
+                            }   
+                        })
+                    };
+                fetch(favUrl, POSTconfig)
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+//NEXT create a buildFavorites function that takes all the posted information about a favorited word and creates a builds a card
+//very likely will need to restructure buildWord to create a cleaner organization of PRE-html data i.e. create an object with
+//all needed information then build the card based on that data rather than individual variables.
+                    favList.appendChild(buildFavorites(data));
+                });
+            });
         });
     });
 });
@@ -42,12 +73,21 @@ document.addEventListener('DOMContentLoaded', () => {
 //sub-functions are called for specific tasks: buildDefinitions, buildHistory...
 function buildWord(data, wordData) {
     let container = document.getElementById('word-container');
+
     let newWord = document.createElement('h1');
-    newWord.className = `${wordData.word}`;
     newWord.textContent = `${wordData.word}`;
+    newWord.className = 'header-line';
+    newWord.id = 'current-word';
     container.appendChild(newWord);
+
+    let favButton = document.createElement('button');
+    favButton.className = 'header-line';
+    favButton.id = 'fav-button';
+    favButton.textContent = 'Add to Favorites';
+    container.appendChild(favButton);
+
     let phonetics = document.createElement('h2');
-    phonetics.className = `${wordData.word}`;
+    phonetics.className = 'current-phonetics';
     phonetics.textContent = buildPhonetics(data);
     container.appendChild(phonetics)
     buildDefinitions(wordData)

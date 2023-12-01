@@ -4,5 +4,15 @@
   }
 
 .button {
-cursor: pointer;
+    cursor: pointer;
+}
+
+.header-line {
+    display:inline;
+    margin-inline-start: 2px;
+    margin-inline-end: 10px;
+}
+
+#fav-container {
+    outline: 1px;
 }

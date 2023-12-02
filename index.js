@@ -35,16 +35,17 @@ document.addEventListener('DOMContentLoaded', () => {
 //really broken version of updating favorites list- working on fixing might need to refresh on 
 //how to run the local server && how to input my words data (currently not sure if my POSTconfig is good)
 
-            let favBtn = document.getElementById('fav-button');
+            let tempFav = document.getElementById(`fav-button-word-container`);
             let tempWord = {
-                "name": document.getElementById('current-word').textContent,
+                "name": document.getElementById(`current-word-word-container`).textContent,
                 "values": {
                   "pronunciation": document.getElementById('current-phonetics'),
                   "definitions": reducedDefinitions,
                       }   
                   };
-            buildFavorites(tempWord, reducedDefinitions);
-            favBtn.addEventListener('click', () => {
+            //temp build favorites location for testing
+            //buildFavorites(tempWord, reducedDefinitions);
+            tempFav.addEventListener('click', () => {
                 event.preventDefault();
                 const POSTconfig = {
                     method: "POST",
@@ -59,16 +60,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     return response.json();
                 })
                 .then(function(data) {
-//NEXT create a buildFavorites function that takes all the posted information about a favorited word and creates a builds a card
-//very likely will need to restructure buildWord to create a cleaner organization of PRE-html data i.e. create an object with
-//all needed information then build the card based on that data rather than individual variables.
                     buildFavorites(tempWord, reducedDefinitions);
                 });
             });
         });
     });
 });
-
+//currently favorites is not appearing without adding something new, I want all favorites
+//to show with their definitions hidden when the page is loaded, and I want new additions to be added. 
 function buildFavorites(fullData, definitions) {
     fetch(favUrl, GETconfig)
     .then(function(response) {
@@ -87,14 +86,16 @@ function buildWord(data, definitions, location) {
     let newWord = document.createElement('h1');
     newWord.textContent = `${definitions.word}`;
     newWord.className = 'header-line';
-    newWord.id = 'current-word';
+    newWord.id = `current-word-${location.id}`;
     location.appendChild(newWord);
-
-    let favButton = document.createElement('button');
-    favButton.className = 'header-line';
-    favButton.id = 'fav-button';
-    favButton.textContent = 'Add to Favorites';
-    location.appendChild(favButton);
+    
+    if (location != document.getElementById('fav-container')) {
+        let favButton = document.createElement('button');
+        favButton.className = 'header-line';
+        favButton.id = `fav-button-${location.id}`;
+        favButton.textContent = 'Add to Favorites';
+        location.appendChild(favButton);
+    }
 
     let phonetics = document.createElement('h2');
     phonetics.className = 'current-phonetics';
@@ -126,8 +127,8 @@ function buildDefinitions (wordData, location) {
         let pos = Object.keys(wordData)[index];
         if (pos != 'word') { createCollapsible(wordData, pos, location)
             console.log(location)
-            let currentDiv = document.getElementById(`${wordData.word}-card-${pos}-${location}`);
-            let currentUl = document.getElementById(`${wordData.word}-list-${pos}-${location}`);
+            let currentDiv = document.getElementById(`${wordData.word}-card-${pos}-${location.id}`);
+            let currentUl = document.getElementById(`${wordData.word}-list-${pos}-${location.id}`);
             for (let entry in wordData[pos]) {
                 let definition = wordData[pos][entry].definition;
                 let li = document.createElement('li');
@@ -155,13 +156,13 @@ function buildPhonetics (data) {
 //handle button creation for buildDefinitions
 function createCollapsible (wordData, pos, location) {
     let div = document.createElement('div');
-    div.id = `${wordData.word}-card-${pos}-${location}`;
+    div.id = `${wordData.word}-card-${pos}-${location.id}`;
     let button = document.createElement('button')
     button.className = 'button';
-    button.id = `${wordData.word}-btn-${pos}-${location}`;
+    button.id = `${wordData.word}-btn-${pos}-${location.id}`;
     button.textContent = pos;
     let ul = document.createElement('ul')
-    ul.id = `${wordData.word}-list-${pos}-${location}`;
+    ul.id = `${wordData.word}-list-${pos}-${location.id}`;
     div.appendChild(button);
     div.appendChild(ul);
     location.appendChild(div);

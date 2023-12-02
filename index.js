@@ -32,9 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
             reducedDefinitions['word'] = wordChoice;
             console.log(reducedDefinitions)
             buildWord(data, reducedDefinitions, document.getElementById('word-container'))
-//really broken version of updating favorites list- working on fixing might need to refresh on 
-//how to run the local server && how to input my words data (currently not sure if my POSTconfig is good)
-
             let tempFav = document.getElementById(`fav-button-word-container`);
             let tempWord = {
                 "name": document.getElementById(`current-word-word-container`).textContent,
@@ -43,8 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
                   "definitions": reducedDefinitions,
                       }   
                   };
-            //temp build favorites location for testing
-            //buildFavorites(tempWord, reducedDefinitions);
             tempFav.addEventListener('click', () => {
                 event.preventDefault();
                 const POSTconfig = {
@@ -68,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 //currently favorites is not appearing without adding something new, I want all favorites
 //to show with their definitions hidden when the page is loaded, and I want new additions to be added. 
+//ALSO dont forget to add a map function somewhere in the future.
 function buildFavorites(fullData, definitions) {
     fetch(favUrl, GETconfig)
     .then(function(response) {

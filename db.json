@@ -1,0 +1,15 @@
+{
+    "favorites": [
+        {
+            "id": 1,
+            "name": "test",
+            "values": {
+                "pronunciation": "toast",
+                "definitions": {
+                    "noun": ["this", "is", "a", "test"],
+                    "verb": ["to", "test"]
+                }
+            }
+        }
+    ]
+}

@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
             reducedDefinitions['word'] = wordChoice;
             console.log(reducedDefinitions)
             buildWord(data, reducedDefinitions, document.getElementById('word-container'))
+            //favorites could be searching instead of saving all definitions
             let tempFav = document.getElementById(`fav-button-word-container`);
             let tempWord = {
                 "name": document.getElementById(`current-word-word-container`).textContent,

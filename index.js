@@ -1,5 +1,4 @@
 //initialize critical variables
-let wordChoice = "default";
 const favUrl = `http://localhost:3000/favorites`;
 const GETconfig = {
     method: "GET",
@@ -9,77 +8,92 @@ const GETconfig = {
     },
 };
 
+
 //DOMContentLoaded
 //when clicking search the api returns the words json information
 //remove previous children and call buildWord on reducedDefinitions
 document.addEventListener('DOMContentLoaded', () => {
+    handleFavorites();
     document.addEventListener('submit', (event) => {
         event.preventDefault(); 
         tempCont = document.getElementById('word-container');
         while (tempCont.firstChild) {
             tempCont.removeChild(tempCont.lastChild);
         }
-        wordChoice = event.target.search.value;
+        let wordChoice = event.target.search.value;
         const getWordUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${wordChoice}`;
         console.log(getWordUrl)
-
-        fetch(getWordUrl, GETconfig) 
-        .then(function(response) {
-            return response.json();
-        })
-        .then(function(data) {
-            let reducedDefinitions = reduceDefinitions(data);
-            reducedDefinitions['word'] = wordChoice;
-            console.log(reducedDefinitions)
-            buildWord(data, reducedDefinitions, document.getElementById('word-container'))
-            //favorites could be searching instead of saving all definitions
-            let tempFav = document.getElementById(`fav-button-word-container`);
-            let tempWord = {
-                "name": document.getElementById(`current-word-word-container`).textContent,
-                "values": {
-                  "pronunciation": document.getElementById('current-phonetics'),
-                  "definitions": reducedDefinitions,
-                      }   
-                  };
-            tempFav.addEventListener('click', () => {
-                event.preventDefault();
-                const POSTconfig = {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      "Accept": "application/json",
-                    },
-                    body: JSON.stringify(tempWord)
-                };
-                fetch(favUrl, POSTconfig)
-                .then(function(response) {
-                    return response.json();
-                })
-                .then(function(data) {
-                    buildFavorites(tempWord, reducedDefinitions);
-                });
-            });
-        });
+        fetchData(wordChoice, document.getElementById('word-container'));
     });
 });
-//currently favorites is not appearing without adding something new, I want all favorites
-//to show with their definitions hidden when the page is loaded, and I want new additions to be added. 
-//ALSO dont forget to add a map function somewhere in the future.
-function buildFavorites(fullData, definitions) {
-    fetch(favUrl, GETconfig)
+
+//fetchData 
+function fetchData (word, location) {
+    let wordUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
+    fetch(wordUrl, GETconfig) 
     .then(function(response) {
-        return response.json()
+        return response.json();
     })
     .then(function(data) {
-        console.log(data)
-        buildWord(fullData, definitions, document.getElementById('fav-container'))
+        let reducedDefinitions = reduceDefinitions(data);
+        reducedDefinitions['word'] = word;
+        let phoneticContent = (function() {
+            for (let fullGroup in data) { return data[fullGroup].phonetic };
+        })();
+
+        buildWord(reducedDefinitions, phoneticContent, location)
+        if (location != document.getElementById('fav-container')) {
+            let tempFav = document.getElementById(`fav-button`);
+            tempFav.addEventListener('click', (event) => {
+                event.preventDefault();
+                addFavorite(word)
+            });
+        }
+    });
+}
+
+//handleFavorites fetches and builds for each item in favorites list
+function handleFavorites () {
+    fetch(favUrl, GETconfig)
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        for (let item in data) {
+            fetchData(data[item].name, document.getElementById('fav-container'));
+        }
+    });
+};
+
+//addFavorite POSTs to favorites list, and builds new word at the end of the list
+function addFavorite(word) {
+//NOT WORKING - word being added with no data
+    const POSTconfig = {
+        method: "POST",
+        headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        },
+        body: JSON.stringify({
+            "name": word
+            })
+    }
+    fetch(favUrl, POSTconfig)
+    .then(function(response) {
+        response.json();
+    })
+    .then(function(data) {
+        let reducedDefinitions = reduceDefinitions(data);
+        reducedDefinitions['word'] = word;
+        let phoneticContent = (function() {
+            for (let fullGroup in data) { return data[fullGroup].phonetic };
+        })();
+        buildWord(reducedDefinitions, phoneticContent, document.getElementById('fav-container'))
     })
 }
 
 //buildWord is used to display the data retrieved about the word.
-//sub-functions are called for specific tasks: buildDefinitions, buildHistory...
-function buildWord(data, definitions, location) {
-
+function buildWord(definitions, pronunciation, location) {
     let newWord = document.createElement('h1');
     newWord.textContent = `${definitions.word}`;
     newWord.className = 'header-line';
@@ -88,20 +102,25 @@ function buildWord(data, definitions, location) {
     
     if (location != document.getElementById('fav-container')) {
         let favButton = document.createElement('button');
-        favButton.className = 'header-line';
-        favButton.id = `fav-button-${location.id}`;
+        favButton.id = 'fav-button';
+        favButton.classList.add('header-line');
         favButton.textContent = 'Add to Favorites';
         location.appendChild(favButton);
+    } else {
+        let removeButton = document.createElement('button');
+        removeButton.classList.add('header-line', 'remove-button');
+        removeButton.textContent = 'Remove from Favorites'
+        location.appendChild(removeButton);
     }
 
     let phonetics = document.createElement('h2');
     phonetics.className = 'current-phonetics';
-    phonetics.textContent = buildPhonetics(data);
+    phonetics.textContent = pronunciation;
     location.appendChild(phonetics)
     buildDefinitions(definitions, location)
 };
     
-//function used for gathering all definitions by part of speech and returning an object with keys cooresponding to POS
+//reduceDefinitions gathers all definitions by part of speech and returns an object with keys cooresponding to POS
 function reduceDefinitions (data) {
     let reducedDefinitions = {};
     for(let fullGroup in data) {
@@ -118,12 +137,11 @@ function reduceDefinitions (data) {
     return reducedDefinitions;
 }
 
-//constructs lists for each part of speech of wordData
+//buildDefinitions constructs lists for each part of speech of wordData
 function buildDefinitions (wordData, location) {
     for (let index in Object.keys(wordData)) {
         let pos = Object.keys(wordData)[index];
         if (pos != 'word') { createCollapsible(wordData, pos, location)
-            console.log(location)
             let currentDiv = document.getElementById(`${wordData.word}-card-${pos}-${location.id}`);
             let currentUl = document.getElementById(`${wordData.word}-list-${pos}-${location.id}`);
             for (let entry in wordData[pos]) {
@@ -146,10 +164,6 @@ function buildDefinitions (wordData, location) {
     };
 };
 
-function buildPhonetics (data) {
-    for (let fullGroup in data) { return data[fullGroup].phonetic };
-}
-
 //handle button creation for buildDefinitions
 function createCollapsible (wordData, pos, location) {
     let div = document.createElement('div');
@@ -160,6 +174,7 @@ function createCollapsible (wordData, pos, location) {
     button.textContent = pos;
     let ul = document.createElement('ul')
     ul.id = `${wordData.word}-list-${pos}-${location.id}`;
+    if (location === document.getElementById('fav-container')) {ul.classList.add('hidden')}
     div.appendChild(button);
     div.appendChild(ul);
     location.appendChild(div);

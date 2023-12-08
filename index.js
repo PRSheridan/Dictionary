@@ -41,25 +41,7 @@ function fetchData (word, container) {
         let phoneticContent = (function() {
             for (let fullGroup in data) { return data[fullGroup].phonetic };
         })();
-
         buildWord(reducedDefinitions, phoneticContent, container)
-        //below handles favorite button listener
-        if (container != document.getElementById('fav-container')) {
-            let tempFav = document.getElementById(`fav-button`);
-            tempFav.addEventListener('click', (event) => {
-                event.preventDefault();
-                addFavorite(word)
-            });
-            //below handles remove from favorites for each favorite
-        } else if (container = document.getElementById('fav-container')) {
-            let removeButtons = [...document.getElementsByClassName('remove-button')];
-            removeButtons.forEach(function(item) {
-                item.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    removeFavorite(item.id);
-                })
-            });
-        };
     });
 }
 
@@ -74,15 +56,31 @@ function handleFavorites () {
             favContainer.push({
                 "id": data[item].id,
                 "name": data[item].name
-            })
-            fetchData(data[item].name, document.getElementById('fav-container'));
-        }
+        })
+        fetchData(data[item].name, document.getElementById('fav-container'));
+        };
+//handles clicking the remove button and removing the word from fav-container and favContainer
+        document.getElementById('fav-container').addEventListener('click', (event) => {
+            event.preventDefault();
+            if (event.target.classList.contains('remove-button')) {
+                let tempName = event.target.className.replace('header-line ', '');
+                tempName = tempName.replace(' remove-button', '')
+                document.getElementById(`${tempName}-fav-container`).remove();
+                console.log(event.target.id-1)
+                favContainer.pop(event.target.id-1)
+                removeFavorite(event.target.id)
+            };
+        });
     });
 };
 
 //addFavorite POSTs to favorites list, and builds new word at the end of the list
 function addFavorite(word) {
 //NOT WORKING - word being added with no data
+
+    for (let item in favContainer) {
+        if (favContainer[item].name === word) {return console.log('oops')};
+    };
     const POSTconfig = {
         method: "POST",
         headers: {
@@ -102,6 +100,8 @@ function addFavorite(word) {
             "id": data.id,
             "name": data.name
         });
+
+        //definitions and pronunciation not listing
         let reducedDefinitions = reduceDefinitions(data);
         reducedDefinitions['word'] = word;
         let phoneticContent = (function() {
@@ -110,8 +110,7 @@ function addFavorite(word) {
         buildWord(reducedDefinitions, phoneticContent, document.getElementById('fav-container'))
     });
 };
-//very weird; I add a word to favorites, it shows with no definitions && remove button does not function
-//after refresh, definitions show, and remove button works BUT only removes after refresh
+
 function removeFavorite(id) {
     const DELETEconfig = {
         method: "DELETE",
@@ -121,22 +120,7 @@ function removeFavorite(id) {
         }
     };
     fetch (favUrl + `/${id}`, DELETEconfig)
-    .then(function(response) {
-        return response.json();
-    })
-    .then(function() {
-        console.log("test")
-        for (let item in favContainer) {
-            if (favContainer[item].id === id) {
-                let tempName = favContainer[item].name;
-                favContainer[item].remove();
-                console.log(document.getElementById(`${tempName}-fav-container`));
-                document.getElementById(`${tempName}-fav-container`).remove();
-            }
-        }
-    })
-    
-}
+    };
 
 //buildWord is used to display the data retrieved about the word.
 //buildWord inside the correct container [word or fav]
@@ -158,7 +142,7 @@ function buildWord(definitions, pronunciation, container) {
         wordDiv.appendChild(favButton);
     } else {
         let removeButton = document.createElement('button');
-        removeButton.classList.add('header-line', 'remove-button');
+        removeButton.classList.add('header-line', `${definitions.word}`, 'remove-button');
         for (let value in favContainer) {
             if (favContainer[value].name === definitions.word) {
                 removeButton.id = favContainer[value].id;
@@ -169,14 +153,20 @@ function buildWord(definitions, pronunciation, container) {
     }
 
     let wordPhonetics = document.createElement('h2');
-    wordPhonetics.className = 'current-phonetics';
     wordPhonetics.textContent = pronunciation;
     wordDiv.appendChild(wordPhonetics)
 
     container.appendChild(wordDiv);
+
+    if (container != document.getElementById('fav-container')) {
+        let tempFav = document.getElementById(`fav-button`);
+        tempFav.addEventListener('click', (event) => {
+            event.preventDefault();
+            addFavorite(definitions.word)
+        });
+    }
     let wordLocation = document.getElementById(`${definitions.word}-${container.id}`);
     buildDefinitions(definitions, wordLocation, container)
-    //container.appendChild(wordDiv);
 };
     
 //reduceDefinitions gathers all definitions by part of speech and returns an object with keys cooresponding to POS
@@ -188,13 +178,13 @@ function reduceDefinitions (data) {
             for (let definitionObjects in outputGroups.definitions){
                 if (!Object.keys(reducedDefinitions).includes(outputGroups.partOfSpeech)) {
                     reducedDefinitions[outputGroups.partOfSpeech] = [];
-                }
+                };
                 reducedDefinitions[outputGroups.partOfSpeech].push(outputGroups.definitions[definitionObjects])
-            }   
-        }
-    }
+            };
+        };
+    };
     return reducedDefinitions;
-}
+};
 
 //buildDefinitions constructs lists for each part of speech of wordData
 function buildDefinitions (wordData, wordLocation, container) {

@@ -1,9 +1,30 @@
-.hidden {
-    visibility: hidden;
-    font-size: 0px;
-  }
+body {
+    font-family: verdana;
+    background-color:gainsboro;
+}
 
 .button {
+    cursor: pointer;
+}
+
+button {
+    cursor: pointer;
+    font-size:100%
+}
+
+button:hover {background-color:lightgrey}
+button:active {
+    background-color:lightgrey;
+    transform:translateY(3px);
+}
+
+input[type="text" i] {
+    font-size:120%
+}
+
+input[type="submit" i] {
+    font-size:100%;
+    font-weight: 550;
     cursor: pointer;
 }
 
@@ -14,5 +35,14 @@
 }
 
 #fav-container {
-    outline: 1px;
+    outline: 5px;
 }
+
+.phonetics {
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.hidden {
+    visibility: hidden;
+    font-size: 0px;
+  }

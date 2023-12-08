@@ -7,12 +7,13 @@ const GETconfig = {
       "Accept": "application/json",
     },
 };
+
+//favContainer holds objects for each id/word pair saved in db.json
 let favContainer = [];
 
-
 //DOMContentLoaded
-//when clicking search the api returns the words json information
-//remove previous children and call buildWord on reducedDefinitions
+//listen for submit event and pass wordChoice to fetchData
+//call handleFavorites to load favorites first
 document.addEventListener('DOMContentLoaded', () => {
     handleFavorites();
     document.addEventListener('submit', (event) => {
@@ -28,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-//fetchData gathers information for buildWord and creates favorites button listener
+//fetchData gathers information for buildWord
 function fetchData (word, container) {
     let wordUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
     fetch(wordUrl, GETconfig) 
@@ -43,9 +44,10 @@ function fetchData (word, container) {
         })();
         buildWord(reducedDefinitions, phoneticContent, container)
     });
-}
+};
 
-//handleFavorites fetches and builds for each item in favorites list
+//handleFavorites calls fetchData for each item in favContainer 
+//also handles remove-button event listener; removes item from favContainer, fav-container, and calls removeFavorite
 function handleFavorites () {
     fetch(favUrl, GETconfig)
     .then(function(response) {
@@ -59,14 +61,14 @@ function handleFavorites () {
         })
         fetchData(data[item].name, document.getElementById('fav-container'));
         };
-//handles clicking the remove button and removing the word from fav-container and favContainer
+
+//remove-button event listener
         document.getElementById('fav-container').addEventListener('click', (event) => {
             event.preventDefault();
             if (event.target.classList.contains('remove-button')) {
                 let tempName = event.target.className.replace('header-line ', '');
                 tempName = tempName.replace(' remove-button', '')
                 document.getElementById(`${tempName}-fav-container`).remove();
-                console.log(event.target.id-1)
                 favContainer.pop(event.target.id-1)
                 removeFavorite(event.target.id)
             };
@@ -74,10 +76,20 @@ function handleFavorites () {
     });
 };
 
-//addFavorite POSTs to favorites list, and builds new word at the end of the list
-function addFavorite(word) {
-//NOT WORKING - word being added with no data
+//removes favorite from db.json
+function removeFavorite(id) {
+    const DELETEconfig = {
+        method: "DELETE",
+        headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        }
+    };
+    fetch (favUrl + `/${id}`, DELETEconfig)
+};
 
+//addFavorite POSTs to favorites list, adds to favContainer, and calls fetchData on word
+function addFavorite(word) {
     for (let item in favContainer) {
         if (favContainer[item].name === word) {return console.log('oops')};
     };
@@ -90,7 +102,7 @@ function addFavorite(word) {
         body: JSON.stringify({
             "name": word
             })
-    }
+    };
     fetch(favUrl, POSTconfig)
     .then(function(response) {
         return response.json();
@@ -100,30 +112,12 @@ function addFavorite(word) {
             "id": data.id,
             "name": data.name
         });
-
-        //definitions and pronunciation not listing
-        let reducedDefinitions = reduceDefinitions(data);
-        reducedDefinitions['word'] = word;
-        let phoneticContent = (function() {
-            for (let fullGroup in data) { return data[fullGroup].phonetic };
-        })();
-        buildWord(reducedDefinitions, phoneticContent, document.getElementById('fav-container'))
     });
+    fetchData(word, document.getElementById('fav-container'));
 };
 
-function removeFavorite(id) {
-    const DELETEconfig = {
-        method: "DELETE",
-        headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        }
-    };
-    fetch (favUrl + `/${id}`, DELETEconfig)
-    };
-
-//buildWord is used to display the data retrieved about the word.
-//buildWord inside the correct container [word or fav]
+//buildWord is used to create the words card and call buildDefinitions to populate lists
+//also handles fav-button event listener which calls addFavorite
 function buildWord(definitions, pronunciation, container) {
     let wordDiv = document.createElement('div');
     wordDiv.id = `${definitions.word}-${container.id}`
@@ -154,10 +148,12 @@ function buildWord(definitions, pronunciation, container) {
 
     let wordPhonetics = document.createElement('h2');
     wordPhonetics.textContent = pronunciation;
+    wordPhonetics.className = 'phonetics';
     wordDiv.appendChild(wordPhonetics)
 
     container.appendChild(wordDiv);
 
+//fav-button event listener
     if (container != document.getElementById('fav-container')) {
         let tempFav = document.getElementById(`fav-button`);
         tempFav.addEventListener('click', (event) => {
@@ -165,6 +161,7 @@ function buildWord(definitions, pronunciation, container) {
             addFavorite(definitions.word)
         });
     }
+
     let wordLocation = document.getElementById(`${definitions.word}-${container.id}`);
     buildDefinitions(definitions, wordLocation, container)
 };
@@ -186,7 +183,7 @@ function reduceDefinitions (data) {
     return reducedDefinitions;
 };
 
-//buildDefinitions constructs lists for each part of speech of wordData
+//buildDefinitions constructs lists for each part of speech in wordData
 function buildDefinitions (wordData, wordLocation, container) {
     for (let index in Object.keys(wordData)) {
         let pos = Object.keys(wordData)[index];

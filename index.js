@@ -167,11 +167,14 @@ function buildWord(definitions, pronunciation, container) {
 };
     
 //reduceDefinitions gathers all definitions by part of speech and returns an object with keys cooresponding to POS
+//fullGroup refers to the multiple results that appear in the dictionaryAPI; outputGroup combines them
 function reduceDefinitions (data) {
     let reducedDefinitions = {};
-    for(let fullGroup in data) {
-        for(let meanings in data[fullGroup].meanings) {
-        let outputGroups = data[fullGroup].meanings[meanings];
+        data.forEach(function (fullGroup) {
+        for(let meanings in fullGroup.meanings) {
+            //each fullGroup contains an object with a key 'partofspeech' and 'meanings' containing the definitions of each word (with that partofspeech)
+            console.log(fullGroup.meanings)
+        let outputGroups = fullGroup.meanings[meanings];
             for (let definitionObjects in outputGroups.definitions){
                 if (!Object.keys(reducedDefinitions).includes(outputGroups.partOfSpeech)) {
                     reducedDefinitions[outputGroups.partOfSpeech] = [];
@@ -179,7 +182,7 @@ function reduceDefinitions (data) {
                 reducedDefinitions[outputGroups.partOfSpeech].push(outputGroups.definitions[definitionObjects])
             };
         };
-    };
+    })
     return reducedDefinitions;
 };
 

@@ -167,39 +167,34 @@ function buildWord(definitions, pronunciation, container) {
 };
     
 //reduceDefinitions gathers all definitions by part of speech and returns an object with keys cooresponding to POS
-//fullGroup refers to the multiple results that appear in the dictionaryAPI; outputGroup combines them
+//fullGroup refers to the multiple results that appear in the dictionaryAPI
 function reduceDefinitions (data) {
     let reducedDefinitions = {};
-        data.forEach(function (fullGroup) {
-        for(let meanings in fullGroup.meanings) {
-            //each fullGroup contains an object with a key 'partofspeech' and 'meanings' containing the definitions of each word (with that partofspeech)
-            console.log(fullGroup.meanings)
-        let outputGroups = fullGroup.meanings[meanings];
-            for (let definitionObjects in outputGroups.definitions){
-                if (!Object.keys(reducedDefinitions).includes(outputGroups.partOfSpeech)) {
-                    reducedDefinitions[outputGroups.partOfSpeech] = [];
-                };
-                reducedDefinitions[outputGroups.partOfSpeech].push(outputGroups.definitions[definitionObjects])
+    data.forEach(function (fullGroup) {
+        fullGroup.meanings.forEach(function (outputGroup){
+            if (!Object.keys(reducedDefinitions).includes(outputGroup.partOfSpeech)) {
+                reducedDefinitions[outputGroup.partOfSpeech] = [];
             };
-        };
-    })
+            outputGroup.definitions.filter(function (definitionObject){
+                return reducedDefinitions[outputGroup.partOfSpeech].push(definitionObject)
+            });
+        });
+    });
     return reducedDefinitions;
 };
 
 //buildDefinitions constructs lists for each part of speech in wordData
 function buildDefinitions (wordData, wordLocation, container) {
-    for (let index in Object.keys(wordData)) {
-        let pos = Object.keys(wordData)[index];
+    Object.keys(wordData).forEach(function (pos) {
         if (pos != 'word') { createDefList(wordData, pos, wordLocation, container)
             let currentUl = document.getElementById(`${wordData.word}-list-${pos}-${container.id}`); 
-            for (let entry in wordData[pos]) {
-                let definition = wordData[pos][entry].definition;
+            wordData[pos].forEach(function (wordObject) {
                 let li = document.createElement('li');
-                li.textContent = definition;
+                li.textContent = wordObject.definition;
                 currentUl.appendChild(li);
-            };
+            });
         };
-    };
+    });
 };
 
 //handle button creation for buildDefinitions

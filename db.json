@@ -1,3 +1,8 @@
 {
-  "favorites": []
+  "favorites": [
+    {
+      "name": "keyboard",
+      "id": 1
+    }
+  ]
 }

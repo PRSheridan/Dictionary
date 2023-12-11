@@ -23,7 +23,8 @@ When the page loads, the favorites list is built first and minimized definitions
 
 <u>Example</u>:
 
-
+![]
+(obsidian://open?vault=PSheridan-Obsidian&file=Dictionary-Project.gif)
 
 In this example, ‘test’ returns the following data:
 https://api.dictionaryapi.dev/api/v2/entries/en/test

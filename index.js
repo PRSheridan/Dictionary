@@ -1,5 +1,6 @@
 //initialize critical variables
 const favUrl = `http://localhost:3000/favorites`;
+let favContainer = [];
 const GETconfig = {
     method: "GET",
     headers: {
@@ -8,10 +9,6 @@ const GETconfig = {
     },
 };
 
-//favContainer holds objects for each id/word pair saved in db.json
-let favContainer = [];
-
-//DOMContentLoaded
 //listen for submit event and pass wordChoice to fetchData
 //call handleFavorites to load favorites first
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tempCont = document.getElementById('word-container');
         while (tempCont.firstChild) {
             tempCont.removeChild(tempCont.lastChild);
-        }
+        };
         let wordChoice = event.target.search.value;
         const getWordUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${wordChoice}`;
         console.log(getWordUrl)
@@ -116,41 +113,37 @@ function addFavorite(word) {
     fetchData(word, document.getElementById('fav-container'));
 };
 
-//buildWord is used to create the words card and call buildDefinitions to populate lists
+//buildWord is used to create the words card and calls buildDefinitions to populate lists
 //also handles fav-button event listener which calls addFavorite
 function buildWord(definitions, pronunciation, container) {
     let wordDiv = document.createElement('div');
-    wordDiv.id = `${definitions.word}-${container.id}`
-
+        wordDiv.id = `${definitions.word}-${container.id}`
     let wordTitle = document.createElement('h1');
-    wordTitle.textContent = `${definitions.word}`;
-    wordTitle.className = 'header-line';
-    wordTitle.id = `current-word-${container.id}`;
-    wordDiv.appendChild(wordTitle);
-    
+        wordTitle.textContent = `${definitions.word}`;
+        wordTitle.className = 'header-line';
+        wordTitle.id = `current-word-${container.id}`;
+        wordDiv.appendChild(wordTitle);
     if (container != document.getElementById('fav-container')) {
         let favButton = document.createElement('button');
-        favButton.id = 'fav-button';
-        favButton.classList.add('header-line');
-        favButton.textContent = 'Add to Favorites';
-        wordDiv.appendChild(favButton);
+            favButton.id = 'fav-button';
+            favButton.classList.add('header-line');
+            favButton.textContent = 'Add to Favorites';
+            wordDiv.appendChild(favButton);
     } else {
         let removeButton = document.createElement('button');
-        removeButton.classList.add('header-line', `${definitions.word}`, 'remove-button');
-        for (let value in favContainer) {
-            if (favContainer[value].name === definitions.word) {
-                removeButton.id = favContainer[value].id;
-            }
-        }
-        removeButton.textContent = 'Remove from Favorites'
+            removeButton.classList.add('header-line', `${definitions.word}`, 'remove-button');
+            for (let value in favContainer) {
+                if (favContainer[value].name === definitions.word) {
+                    removeButton.id = favContainer[value].id;
+                };
+            };
+            removeButton.textContent = 'Remove from Favorites'
         wordDiv.appendChild(removeButton);
-    }
-
+    };
     let wordPhonetics = document.createElement('h2');
-    wordPhonetics.textContent = pronunciation;
-    wordPhonetics.className = 'phonetics';
-    wordDiv.appendChild(wordPhonetics)
-
+        wordPhonetics.textContent = pronunciation;
+        wordPhonetics.className = 'phonetics';
+        wordDiv.appendChild(wordPhonetics)
     container.appendChild(wordDiv);
 
 //fav-button event listener
@@ -160,17 +153,17 @@ function buildWord(definitions, pronunciation, container) {
             event.preventDefault();
             addFavorite(definitions.word)
         });
-    }
-
+    };
     let wordLocation = document.getElementById(`${definitions.word}-${container.id}`);
     buildDefinitions(definitions, wordLocation, container)
 };
     
 //reduceDefinitions gathers all definitions by part of speech and returns an object with keys cooresponding to POS
-//fullGroup refers to the multiple results that appear in the dictionaryAPI
+//fullGroup: API fetch returns multiple word objects
 function reduceDefinitions (data) {
     let reducedDefinitions = {};
     data.forEach(function (fullGroup) {
+        console.log(fullGroup)
         fullGroup.meanings.forEach(function (outputGroup){
             if (!Object.keys(reducedDefinitions).includes(outputGroup.partOfSpeech)) {
                 reducedDefinitions[outputGroup.partOfSpeech] = [];
@@ -201,19 +194,17 @@ function buildDefinitions (wordData, wordLocation, container) {
 function createDefList (wordData, pos, wordLocation, container) {
     let div = document.createElement('div');
     div.id = `${wordData.word}-card-${pos}-${container.id}`;
-
     let button = document.createElement('button')
     button.className = 'button';
     button.id = `${wordData.word}-btn-${pos}-${container.id}`;
     button.textContent = pos;
-
     let ul = document.createElement('ul')
     ul.id = `${wordData.word}-list-${pos}-${container.id}`;
     if (container === document.getElementById('fav-container')) {ul.classList.add('hidden')}
-
     div.appendChild(button);
     div.appendChild(ul);
-    
+
+//button hide/show event listener
     div.addEventListener('click', (event) => {
         event.preventDefault();
         if (event.target.className === 'button') {
@@ -225,4 +216,4 @@ function createDefList (wordData, pos, wordLocation, container) {
         };
     });
     wordLocation.appendChild(div);
-}
+};

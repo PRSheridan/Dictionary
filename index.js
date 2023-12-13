@@ -163,7 +163,6 @@ function buildWord(definitions, pronunciation, container) {
 function reduceDefinitions (data) {
     let reducedDefinitions = {};
     data.forEach(function (fullGroup) {
-        console.log(fullGroup)
         fullGroup.meanings.forEach(function (outputGroup){
             if (!Object.keys(reducedDefinitions).includes(outputGroup.partOfSpeech)) {
                 reducedDefinitions[outputGroup.partOfSpeech] = [];
